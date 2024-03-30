@@ -1,118 +1,71 @@
-import React, { useRef, useEffect, useState, Suspense } from "react"
+import React, { useRef, useEffect, useState } from "react"
+import { useFrame, useThree } from "@react-three/fiber"
 import {
   Clone,
   Html,
   PresentationControls,
   useGLTF,
-  PositionalAudio,
+  Text3D,
 } from "@react-three/drei"
-import Guitar from "./Guitar"
-import { useFrame } from "@react-three/fiber"
-import { useThree } from "@react-three/fiber"
 import gsap from "gsap"
+
+// Local imports
+import Guitar from "./Guitar"
 import Lights from "./Lights"
+import Scene from "./Scene"
+import Bird from "./Bird"
 
 const Models = () => {
-  //CONTROLS
-  //   const { p } = useControls({
-  //     p: {
-  //       value: {
-  //         x: 0,
-  //         y: 0,
-  //         z: 0,
-  //       },
-  //       step: 0.001,
-  //     },
-  //   })
-  //   const { x, y, z } = p
-
   /*----------  REFERENCES----------*/
-  const musicBox = useRef()
-  const notesRef = useRef()
   const pointerBox = useRef()
   const camBox = useRef()
   const pointerRef = useRef()
   const { camera } = useThree()
   const cameraPosition = camera.position
-  const notesPosition = notesRef.current?.position
   const pointerPosition = pointerRef.current?.position
 
   /*----------  STATE ----------*/
   const [zoomComputer, setZoomComputer] = useState(false)
   const [musicZoom, setMusicZoom] = useState(false)
+  const [isLoaded, setIsLoaded] = useState(false)
+  /*----------  LOADING ----------*/
+  // Example for one model, replicate for others as needed
+
   /*----------  EFFECTS ----------*/
-
-  useEffect(() => {
-    if (musicZoom) {
-      gsap.to(musicBox.current.position, {
-        duration: 5,
-        x: 2,
-        y: 2,
-        z: 0.32,
-        ease: "power4.out",
-      })
-      gsap.to(notesRef.current.position, {
-        duration: 5,
-        x: 2,
-        y: 2,
-        z: 0.32,
-        ease: "power4.out",
-      })
-    } else {
-      gsap.to(musicBox.current.position, {
-        duration: 5,
-        x: -0.22,
-        y: 0.9,
-        z: 0.14,
-        ease: "power4.out",
-      })
-      gsap.to(notesRef.current.position, {
-        duration: 5,
-        x: -0.22,
-        y: 0.9,
-        z: 0.14,
-        ease: "power4.out",
-      })
-    }
-
-    setTimeout(() => {
-      setMusicZoom(false)
-    }, 45000)
-    console.log("musicZoom", musicZoom)
-  }, [musicZoom])
 
   useEffect(() => {
     if (zoomComputer) {
       gsap.to(camBox.current.position, {
-        duration: 2,
+        duration: 1.5,
         x: -0.76,
         y: 0.5,
         z: 0.32,
-        ease: "power4.out",
+        ease: "ease.inOut",
       })
       gsap.to(cameraPosition, {
-        duration: 2,
+        duration: 1.5,
         x: -1.3,
         y: 0.7,
         z: 0.9,
-        ease: "power4.out",
+        ease: "ease.inOut",
       })
     } else {
       gsap.to(camBox.current.position, {
-        duration: 2,
+        duration: 1.5,
         x: 0,
         y: 0,
         z: 0,
-        ease: "power4.out",
+        ease: "ease.inOut",
       })
       gsap.to(cameraPosition, {
-        duration: 2,
-        x: -1.97,
-        y: 1,
-        z: 1.92,
-        ease: "power4.out",
+        duration: 1.5,
+        x: -1.8,
+        y: 0.85,
+        z: 1.7,
+        ease: "ease.inOut",
       })
     }
+    console.log("yes")
   }, [zoomComputer])
 
   /*----------  ANIMATION----------*/
@@ -122,25 +75,13 @@ const Models = () => {
       cameraPosition.y + 8,
       -cameraPosition.z
     )
-    notesRef.current.lookAt(
-      cameraPosition.x,
-      cameraPosition.y,
-      cameraPosition.z
-    )
 
     pointerBox.current.position.y =
       Math.sin(state.clock.elapsedTime) * 0.02 + 0.76
     camera.lookAt(camBox.current.position)
 
-    notesRef.current.position.y =
-      Math.sin(state.clock.elapsedTime + 2) * 0.02 + 1
-
     pointerRef.current.position.y =
       Math.sin(state.clock.elapsedTime) * 0.02 + 0.72
-    camera.lookAt(camBox.current.position)
-
-    musicBox.current.position.y =
-      Math.sin(state.clock.elapsedTime + 2) * 0.02 + 1.01
     camera.lookAt(camBox.current.position)
 
     pointerRef.current.position.y =
@@ -168,9 +109,7 @@ const Models = () => {
   const plant2 = useGLTF("gltf/plantSmall2.glb")
   const plant3 = useGLTF("gltf/plantSmall3.glb")
   const plant4 = useGLTF("gltf/pottedPlant.glb")
-  const notes = useGLTF("gltf/notes.glb")
   const speaker = useGLTF("gltf/speaker.glb")
-  /*----------  CONSOLE LOGS / TESTING ----------*/
 
   /*----------  SHADOW IMPLEMENTATION ----------*/
 
@@ -182,7 +121,6 @@ const Models = () => {
     keyboard,
     chair,
     desk,
-    bookcase,
     speaker,
     plant1,
     plant2,
@@ -206,7 +144,6 @@ const Models = () => {
     windowSlide,
     wallCornerRounded,
     rug,
-    chair,
     bookcase,
   ]
   itemsToReceiveShadow.forEach((item) => {
@@ -216,10 +153,11 @@ const Models = () => {
       }
     })
   })
+
   return (
     <PresentationControls
-      polar={zoomComputer ? [-2, 2] : [-0.15, 0.15]}
-      azimuth={zoomComputer ? [-2, 2] : [-0.15, 0.15]}
+      polar={zoomComputer ? [-0.1, 0.1] : [-0.15, 0.15]}
+      azimuth={zoomComputer ? [-0.1, 0.1] : [-0.15, 0.15]}
     >
       <Lights guitarActive={musicZoom} />
       {/*=============================================                      = Walls/Windows =
@@ -260,6 +198,8 @@ const Models = () => {
         position={[0.05, 0, 0.55]}
         rotation-y={Math.PI * 0.5}
       />
+      {/*=============================================                      = LOADING =
+      =============================================*/}
       {/*=============================================                      = Floors =
       =============================================*/}
       <primitive
@@ -275,7 +215,82 @@ const Models = () => {
         object={chair.scene}
         position={[-0.78, 0.01, 0.62]}
         rotation-y={Math.PI * -0.4}
+        onPointerOver={(event) => {
+          console.log("Hovering over chair", event)
+        }}
       />
+      {/*=============================================                      = 3D TEXT =
+      =============================================*/}
+      {/* JavaScript */}
+      {/* <Text3D
+        font="../fonts/Roboto Black_Regular.js"
+        position={[-0.193, 0.6410000000000002, 0.9840000000000005]} // Updated position values
+        rotation={[
+          (3.199999999999999 * Math.PI) / 180, // Convert new rotation from degrees to radians
+          (-90 * Math.PI) / 180, // Convert new rotation from degrees to radians
+          (78.40000000000009 * Math.PI) / 180, // Convert new rotation from degrees to radians
+        ]}
+        scale={0.015800000000000033} // Updated scale for uniform scaling across all axes
+      >
+        JavaScript
+        <meshBasicMaterial color={"#E0E0E0"} />
+      </Text3D> */}
+      {/* Python */}
+      {/* <Text3D
+        font="../../public/fonts/Roboto Black_Regular.js"
+        position={[-0.2, 0.652, 1.0519999999999958]} // Updated position values
+        rotation={[
+          (parseFloat(0) * Math.PI) / 180, // Convert rotation from degrees to radians
+          (parseFloat(-90) * Math.PI) / 180, // Convert rotation from degrees to radians
+          (parseFloat(90.0000000000001) * Math.PI) / 180, // Convert rotation from degrees to radians
+        ]}
+        scale={0.01879999999999996} // Use the first scale value for uniform scaling across all axes
+      >
+        Python
+        <meshBasicMaterial color={"#707070"} />
+      </Text3D> */}
+      {/* Node JS */}
+      {/* <Text3D
+        font="../../public/fonts/Roboto Black_Regular.js"
+        position={[-0.187, 0.648, 1.0869999999999935]} // Updated position
+        rotation={[
+          (parseFloat(0) * Math.PI) / 180, // Convert first rotation value from degrees to radians, though it's 0 in this case
+          (parseFloat(-90) * Math.PI) / 180, // Convert second rotation value from degrees to radians
+          (parseFloat(90.60000000000011) * Math.PI) / 180, // Convert third rotation value from degrees to radians
+        ]}
+        scale={0.016999999999999953} // Using the first scale value for uniform scaling
+      >
+        Node.js
+        <meshBasicMaterial color={"#707070"} />
+      </Text3D> */}
+      {/* React */}
+      {/* <Text3D
+        font="../../public/fonts/Roboto Black_Regular.js"
+        position={[-0.199, 0.656, 1.119999999999992]} // Updated position
+        rotation={[
+          (parseFloat(0) * Math.PI) / 180, // Convert first rotation value from degrees to radians, though it's 0 in this case
+          (parseFloat(-90) * Math.PI) / 180, // Convert second rotation value from degrees to radians
+          (parseFloat(90.60000000000011) * Math.PI) / 180, // Convert third rotation value from degrees to radians
+        ]}
+        scale={0.01929999999999994} // Using the first scale value for uniform scaling
+      >
+        React
+        <meshBasicMaterial color={"#006400"} />
+      </Text3D> */}
+      {/* /SQL */}
+      {/* <Text3D
+        font="../"
+        position={[-0.20700000000000002, 0.669, 1.1539999999999897]} // Updated position
+        rotation={[
+          (parseFloat(0) * Math.PI) / 180, // Rotation values converted from degrees to radians; 0 remains 0
+          (parseFloat(-90) * Math.PI) / 180, // -90 degrees to radians
+          (parseFloat(90.60000000000011) * Math.PI) / 180, // 90.6 degrees to radians
+        ]}
+        scale={0.01929999999999994} // Using the first scale value for uniform scaling
+      >
+        SQL
+        <meshBasicMaterial color={"#E0E0E0"} />
+      </Text3D> */}
       {/*=============================================                      = Computer =
       =============================================*/}
       <primitive
@@ -287,7 +302,7 @@ const Models = () => {
           distanceFactor={0.12}
           transform
           wrapperClass="htmlScreen"
-          position={[0.196, 0.17, -0.05]}
+          position={[0.196, 0.172, -0.05]}
           rotation-x={Math.PI * -0.04}
         >
           <iframe src="https://golden-lollipop-ca1ff8.netlify.app" />
@@ -316,33 +331,6 @@ const Models = () => {
         rotation-z={Math.PI * 0.5}
         rotation-y={[Math.PI * 2]}
       />
-      <Suspense>
-        <primitive
-          ref={notesRef}
-          object={notes.scene}
-          position={[-0.22, 0.9, 0.14]}
-          rotation-z={Math.PI * 2}
-          rotation-y={[Math.PI * 2]}
-          scale={0.08}
-        />
-      </Suspense>
-      <Suspense>
-        <mesh position={[-0.17, 0.64, 1.06]} visible={false}>
-          <boxBufferGeometry attach="geometry" args={[0.1, 0.1, 0.1]} />
-          <meshStandardMaterial color="red" />
-          {musicZoom && (
-            <PositionalAudio
-              autoplay
-              loop={false}
-              url="/discoSite.mp3"
-              distance={3}
-              getRolloffFactor={() => 0.5}
-              getDistanceModel={() => "exponential"}
-              getRefDistance={() => 0.5}
-            />
-          )}
-        </mesh>
-      </Suspense>
       {/*=============================================                      =Pointer =
       =============================================*/}
       <primitive
@@ -419,19 +407,8 @@ const Models = () => {
         <boxBufferGeometry args={[0.1, 0.1, 0.1]} />
         <meshBasicMaterial color="red" />
       </mesh>
-      <Suspense>
-        <mesh
-          position={notesPosition}
-          visible={false}
-          ref={musicBox}
-          onClick={() => {
-            setMusicZoom(!musicZoom)
-          }}
-        >
-          <boxBufferGeometry args={[0.1, 0.1, 0.1]} />
-          <meshBasicMaterial color="red" />
-        </mesh>
-      </Suspense>
+      <Scene />
+      <Bird />
     </PresentationControls>
   )
 }

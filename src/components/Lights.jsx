@@ -10,7 +10,6 @@ const Lights = ({ guitarActive }) => {
     <>
       <spotLight
         penumbra={1}
-        castShadow
         ref={sl}
         position={[-0.29, 1.82, 0.36]}
         angle={0.25}
